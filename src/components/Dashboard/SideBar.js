@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import sidebarMenu from '../../_data/sidebarMenu.json'; // Adjust the path as necessary
+import sidebarMenu from '../../_data/sideBarMenu.json'; // Adjust the path as necessary
 
 export default function Sidebar() {
   const router = useRouter();
