@@ -23,10 +23,10 @@ export default function Login() {
 
       // Set cookies after successful login
       Cookies.set('token', response.data.token);
-      Cookies.set('userName', username);
+      Cookies.set('name', response.data.user.name);
       Cookies.set('userId', response.data.user._id); // Assuming the user ID is in the response
 
-      //console.log(response.data);
+      console.log(response.data);
       // Redirect to dashboard
       router.push('/dashboard');
       // Handle other response actions (e.g., redirect to another page)

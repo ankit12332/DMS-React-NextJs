@@ -6,9 +6,15 @@ import { useRouter } from 'next/router';
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [inactiveTime, setInactiveTime] = useState(0);
+  const [name, setName] = useState(null);
   const dropdownRef = useRef(null);
   const router = useRouter();
   const logoutTimerRef = useRef(null);
+
+  useEffect(() => {
+    // Set name after component mounts
+    setName(Cookies.get('name') || 'Guest');
+  }, []);
 
   const handleLogout = () => {
     // Clear all cookies
@@ -103,7 +109,7 @@ export default function Navbar() {
                 <span className="ml-2 text-sm mr-4">(Auto Logout in {formatCountdown()})</span>
             )}
             <FaUser className="text-md" />
-            <span className='ml-2 mr-1'>Username</span>
+            <span className='ml-2 mr-1'>{name || 'Loading...'}</span>
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl">
