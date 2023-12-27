@@ -5,8 +5,10 @@ import { useRouter } from 'next/router';
 
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [inactiveTime, setInactiveTime] = useState(0);
   const dropdownRef = useRef(null);
   const router = useRouter();
+  const logoutTimerRef = useRef(null);
 
   const handleLogout = () => {
     // Clear all cookies
@@ -16,6 +18,55 @@ export default function Navbar() {
 
     // Redirect to the login page
     router.push('/login');
+  };
+
+  const resetTimer = () => {
+    setInactiveTime(0);
+    if (logoutTimerRef.current) {
+      clearTimeout(logoutTimerRef.current);
+    }
+    logoutTimerRef.current = setTimeout(() => {
+      handleLogout();
+    }, 120 * 1000);
+  };
+
+  useEffect(() => {
+    // Set event listeners for user activity
+    document.addEventListener('mousemove', resetTimer);
+    document.addEventListener('keydown', resetTimer);
+    document.addEventListener('click', resetTimer);
+
+    // Start the logout timer
+    resetTimer();
+
+    return () => {
+      document.removeEventListener('mousemove', resetTimer);
+      document.removeEventListener('keydown', resetTimer);
+      document.removeEventListener('click', resetTimer);
+      clearTimeout(logoutTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setInactiveTime(prevTime => prevTime + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (inactiveTime >= 120) {
+      handleLogout();
+    }
+  }, [inactiveTime]);
+
+  // Format the countdown timer
+  const formatCountdown = () => {
+    const totalSeconds = 120 - inactiveTime; // 2 minutes - inactiveTime
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   useEffect(() => {
@@ -48,6 +99,9 @@ export default function Navbar() {
         <h1 className="text-xl font-semibold">Dashboard</h1>
         <div className="relative" ref={dropdownRef}>
           <button onClick={toggleDropdown} className="flex items-center focus:outline-none">
+            {inactiveTime > 0 && inactiveTime < 120 && (
+                <span className="ml-2 text-sm mr-4">(Auto Logout in {formatCountdown()})</span>
+            )}
             <FaUser className="text-md" />
             <span className='ml-2 mr-1'>Username</span>
           </button>
