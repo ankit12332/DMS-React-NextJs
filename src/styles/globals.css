@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom CSS for module animations */
+.module-expanded {
+    max-height: 500px; /* Adjust as needed */
+    overflow: hidden;
+}
+
+.module-collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+
+.text-size-normal {
+    font-size: 1rem; /* or any other size you prefer */
+  }
