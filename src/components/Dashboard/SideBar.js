@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 import classNames from 'classnames';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 
 export default function Sidebar() {
   const [userData, setUserData] = useState(null);
@@ -15,7 +16,7 @@ export default function Sidebar() {
   }, [router.pathname]);
 
   const fetchUserData = useCallback((userId) => {
-    fetch(`http://localhost:3000/users/${userId}`)
+    fetch(API_ENDPOINTS.GET_USER(userId))
       .then(response => response.json())
       .then(data => {
         setUserData(data);

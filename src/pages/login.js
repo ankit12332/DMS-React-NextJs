@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default function Login() {
   const [currentImage, setCurrentImage] = useState(0);
@@ -16,7 +17,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:3000/auth/login', {
+      const response = await axios.post(API_ENDPOINTS.LOGIN , {
         username: username,
         password: password
       });
