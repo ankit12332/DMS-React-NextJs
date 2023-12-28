@@ -30,7 +30,11 @@ export default function Navbar() {
       clearTimeout(logoutTimerRef.current);
       logoutTimerRef.current = setTimeout(handleLogout, 600 * 1000); // 10 minutes
     };
-    document.addEventListener('mousemove', resetTimer);
+    const activityEvents = ['mousemove', 'keydown', 'click'];
+
+    activityEvents.forEach(event => {
+      document.addEventListener(event, resetTimer);
+    });
 
     // Logout timer and inactive time interval
     const interval = setInterval(() => {

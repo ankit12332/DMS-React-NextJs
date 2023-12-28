@@ -8,7 +8,6 @@ import { API_ENDPOINTS } from '../../config/apiConfig';
 export default function Sidebar() {
   const [userData, setUserData] = useState(null);
   const [expandedModule, setExpandedModule] = useState(null);
-  const [error, setError] = useState(null);
   const router = useRouter();
 
   const isActive = useCallback((path) => {
@@ -16,14 +15,13 @@ export default function Sidebar() {
   }, [router.pathname]);
 
   const fetchUserData = useCallback((userId) => {
-    fetch(API_ENDPOINTS.GET_USER(userId))
+    fetch(API_ENDPOINTS.GET_USER_BY_ID(userId))
       .then(response => response.json())
       .then(data => {
         setUserData(data);
       })
       .catch(error => {
         console.error('Error fetching user data:', error);
-        setError(error);
       });
   }, []);
 
@@ -38,7 +36,6 @@ export default function Sidebar() {
     setExpandedModule(prevModuleId => prevModuleId === moduleId ? null : moduleId);
   }, []);
 
-  if (error) return <p>Error loading data!</p>;
 
   return (
     <aside className="w-64 bg-gray-700 text-gray-100">
