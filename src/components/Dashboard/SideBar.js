@@ -68,16 +68,16 @@ export default function Sidebar() {
                   )}
                 >
                   {module.programs.map((program) => (
-                    <Link key={program.id} href={program.path || '#'} legacyBehavior>
-                      <a 
-                        className={classNames(
-                          'block px-3 py-1 mt-1 rounded transition-colors duration-200 ease-in-out text-size-normal',
-                          { 'bg-gray-600': isActive(program.path), 'hover:bg-gray-600': true }
-                        )}
-                      >
-                        {program.title}
-                      </a>
-                    </Link>
+                    <Link key={program.id} href={program.path ? `/${program.path}` : '#'} legacyBehavior>
+                    <a 
+                      className={classNames(
+                        'block px-3 py-1 mt-1 rounded transition-colors duration-200 ease-in-out text-size-normal',
+                        { 'bg-gray-600': isActive(program.path), 'hover:bg-gray-600': true }
+                      )}
+                    >
+                      {program.title}
+                    </a>
+                  </Link>
                   ))}
                 </div>
               </div>

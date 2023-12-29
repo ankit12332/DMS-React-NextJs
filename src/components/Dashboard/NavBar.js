@@ -16,14 +16,6 @@ export default function Navbar() {
     // Set name from cookies
     setName(Cookies.get('name') || 'Guest');
 
-    // Handle route changes
-    const handleRouteChange = url => {
-      if (url === '/dashboard') {
-        router.reload();
-      }
-    };
-    router.events.on('routeChangeComplete', handleRouteChange);
-
     // User activity event listeners
     const resetTimer = () => {
       setInactiveTime(0);
@@ -43,7 +35,6 @@ export default function Navbar() {
 
     // Cleanup
     return () => {
-      router.events.off('routeChangeComplete', handleRouteChange);
       document.removeEventListener('mousemove', resetTimer);
       clearInterval(interval);
       clearTimeout(logoutTimerRef.current);
