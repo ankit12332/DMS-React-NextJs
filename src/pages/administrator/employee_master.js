@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import useFetchUsers from '@/hooks/Employee_Master/useFetchEmployees';
 import SearchBar from '@/components/Employee_Master/SearchBar';
 import CreateUserButton from '@/components/Employee_Master/CreateEmployeeButton';
-import UserGrid from '@/components/Employee_Master/EmployeeGrid';
+import EmployeeGrid from '@/components/Employee_Master/EmployeeGrid';
 import CreateEmployeeDialog from '@/components/Employee_Master/CreateEmployeeDialog';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 // Import AG Grid styles
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -22,6 +23,29 @@ export default function EmployeeMaster() {
     { headerName: "Email", field: "email", sortable: true, filter: true, flex: 1},
     { headerName: "Username", field: "username", sortable: true, filter: true, flex: 1 },
     { headerName: "Created At", field: "createdAt", sortable: true, filter: true, flex: 1 },
+    {
+      headerName: "Options",
+      field: "options",
+      cellRenderer: (params) => (
+        <div className="flex items-center space-x-3 h-full">
+          <button 
+            className="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out transform hover:scale-110"
+            onClick={() => handleEdit(params.data)}
+            style={{fontSize:"1.1rem"}}
+          >
+            <FaEdit />
+          </button>
+          <button 
+            className="text-red-500 hover:text-red-700 transition duration-300 ease-in-out transform hover:scale-110"
+            onClick={() => handleDelete(params.data)}
+            style={{fontSize:"1rem"}}
+          >
+            <FaTrash />
+          </button>
+        </div>
+      ),
+      flex: 0.5
+    }
     // Additional fields as needed
   ], []);
 
@@ -63,7 +87,7 @@ export default function EmployeeMaster() {
       <CreateUserButton onCreateUser={handleCreateUser} />
     </div>
 
-    <UserGrid rowData={rowData} columnDefs={columns} onGridReady={onGridReady} />
+    <EmployeeGrid rowData={rowData} columnDefs={columns} onGridReady={onGridReady} />
     {/* Ensure the dialog is a direct child of the main container */}
     {isCreateDialogOpen && (
         <CreateEmployeeDialog onClose={handleCloseDialog} isCreateDialogOpen={isCreateDialogOpen} />

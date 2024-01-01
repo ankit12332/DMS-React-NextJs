@@ -1,7 +1,7 @@
 import React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 
-const UserGrid = ({ rowData, columnDefs, onGridReady }) => (
+const EmployeeGrid = ({ rowData, columnDefs, onGridReady }) => (
   <div className="ag-theme-alpine" style={{ height: 435, width: '100%' }}>
     <AgGridReact
       rowData={rowData}
@@ -14,4 +14,4 @@ const UserGrid = ({ rowData, columnDefs, onGridReady }) => (
   </div>
 );
 
-export default UserGrid;
+export default EmployeeGrid;

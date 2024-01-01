@@ -55,7 +55,7 @@ const CreateEmployeeDialog = ({ onClose, isCreateDialogOpen  }) => {
               </div>
             ))}
         </form>
-        <div className="bg-gray-100 px-6 py-3">
+        <div className="px-6 py-3">
           <div className="flex justify-end space-x-3">
             <button onClick={onClose} className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition ease-in-out duration-300 transform hover:scale-105">Close</button>
             <button type="submit" form="createEmployeeForm" className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg shadow-md transition ease-in-out duration-300 transform hover:scale-105">Save</button>
