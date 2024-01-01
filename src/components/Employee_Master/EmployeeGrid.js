@@ -8,6 +8,7 @@ const EmployeeGrid = ({ rowData, columnDefs, onGridReady }) => (
       columnDefs={columnDefs}
       pagination={true}
       paginationPageSize={8}
+      paginationPageSizeSelector={[8, 10, 20, 50]}
       animateRows={true}
       onGridReady={onGridReady}
     />  

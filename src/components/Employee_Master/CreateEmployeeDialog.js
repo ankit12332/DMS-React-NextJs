@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import CommonModal from '../Layouts/CommonModal';
+import { API_ENDPOINTS } from '../../config/apiConfig';
 
-const CreateEmployeeDialog = ({ onClose, isCreateDialogOpen  }) => {
+const CreateEmployeeDialog = ({ onClose, isCreateDialogOpen, refreshGrid }) => {
   const [formData, setFormData] = useState({
     name: '',
     employeeCode: '',
@@ -10,16 +11,18 @@ const CreateEmployeeDialog = ({ onClose, isCreateDialogOpen  }) => {
     password: ''
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const handleChange = useCallback((e) => {
+    setFormData(prevFormData => ({ ...prevFormData, [e.target.name]: e.target.value }));
+  }, []);
+
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
     // Make the POST request to the API
     try {
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch(API_ENDPOINTS.CREATE_USER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,21 +31,26 @@ const CreateEmployeeDialog = ({ onClose, isCreateDialogOpen  }) => {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        console.log('Successfully submitted:', result);
+        //const result = await response.json();
+        //console.log('Successfully submitted:', result);
+        refreshGrid();
         onClose();  // Close the modal on success
       } else {
-        console.error('Failed to submit:', response.statusText);
+        const errorMsg = await response.text();
+        setError(`Failed to submit: ${errorMsg}`);
       }
     } catch (error) {
-      console.error('Error during submission:', error);
+      setError(`Error during submission: ${error.message}`);
     }
-  };
+  }, [formData, onClose, refreshGrid]);
+
+  const formFields = ['name', 'employeeCode', 'email', 'username', 'password'];
 
   return (
     <CommonModal isOpen={isCreateDialogOpen} onClose={onClose} title="Create New Employee">
+        {error && <div className="text-red-500 mb-2">{error}</div>}
         <form id="createEmployeeForm" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {['name', 'employeeCode', 'email', 'username', 'password'].map(field => (
+            {formFields.map(field => (
               <div key={field}>
                 <label className="block text-gray-700 text-sm font-bold mb-1 capitalize">{field}</label>
                 <input 
