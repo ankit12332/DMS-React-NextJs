@@ -1,11 +1,10 @@
-import React from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-const SearchBar = ({ searchText, setSearchText, onSearch }) => (
+const SearchBar = ({ searchText, setSearchText, onSearch, placeholder }) => (
   <div className="flex items-center">
     <input 
       type="text"
-      placeholder="Search by Name or Username"
+      placeholder={placeholder || "Search..."}
       value={searchText}
       onChange={e => setSearchText(e.target.value)}
       className="border-2 border-gray-300 rounded p-1.5 mr-2"

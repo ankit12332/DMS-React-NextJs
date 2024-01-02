@@ -1,33 +1,40 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import useFetchUsers from '@/hooks/Employee_Master/useFetchEmployees';
-import SearchBar from '@/components/Employee_Master/SearchBar';
-import CreateUserButton from '@/components/Employee_Master/CreateEmployeeButton';
-import EmployeeGrid from '@/components/Employee_Master/EmployeeGrid';
-import CreateEmployeeDialog from '@/components/Employee_Master/CreateEmployeeDialog';
-import EditEmployeeDialog from '@/components/Employee_Master/EditEmployeeDialog';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
+import SearchBar from '@/components/Layouts/CommonSearchBar';
+import CreateEmployeeDialog from '@/components/Administrator/Employee_Master/CreateEmployeeDialog';
+import EditEmployeeDialog from '@/components/Administrator/Employee_Master/EditEmployeeDialog';
 import CommonModal from '@/components/Layouts/CommonModal';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/apiConfig';
-// Import AG Grid styles
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
+const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'),{ ssr: false });
+
 export default function EmployeeMaster() {
+  const [isClient, setIsClient] = useState(false); //For CommonAgGrid. Because in Server Side Rendering heavy library takes time to load
   const [searchText, setSearchText] = useState('');
   const [gridApi, setGridApi] = useState(null);
-  const { rowData, fetchData } = useFetchUsers(gridApi);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [rowData, setRowData] = useState([]);
+  const [dialogState, setDialogState] = useState({
+    create: false,
+    edit: false,
+    delete: false,
+    selectedUser: null,
+    employeeToDelete: null
+  });
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  // Define the columns for AG Grid
+  useEffect(() => {
+    fetchEmployee();
+  }, []);
+
   const columns = useMemo(() => [
     { headerName: "Name", field: "name", sortable: true, filter: true, flex: 1 },
     { headerName: "Employee Code", field: "employeeCode", sortable: true, filter: true, flex: 1 },
-    { headerName: "Email", field: "email", sortable: true, filter: true, flex: 1},
+    { headerName: "Email", field: "email", sortable: true, filter: true, flex: 1 },
     { headerName: "Username", field: "username", sortable: true, filter: true, flex: 1 },
     { headerName: "Created At", field: "createdAt", sortable: true, filter: true, flex: 1 },
     {
@@ -53,16 +60,27 @@ export default function EmployeeMaster() {
       ),
       flex: 0.5
     }
-    // Additional fields as needed
   ], []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const onGridReady = params => {
-    setGridApi(params.api); // Set the grid API
+  const fetchEmployee = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GET_ALL_USERS);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setRowData(data);
+      } else {
+        console.error('Data is not an array:', data);
+        // Handle the case where data is not an array
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
+  
+
+  const onGridReady = useCallback(params => {
+    setGridApi(params.api);
+  }, []);
 
   const handleSearch = useCallback(() => {
     if (searchText.trim() === '') {
@@ -77,72 +95,73 @@ export default function EmployeeMaster() {
   }, [searchText, rowData, gridApi]);
 
   const handleCreateUser = () => {
-    setIsCreateDialogOpen(true);
+    setDialogState(prev => ({ ...prev, create: true }));
   };
 
-  const handleEdit = user => {
-    setSelectedUser(user);
-    setIsEditDialogOpen(true);
-  };
+  const handleEdit = useCallback(user => {
+    setDialogState(prev => ({ ...prev, edit: true, selectedUser: user }));
+  }, []);
 
-  const handleDelete = (user) => {
-    setEmployeeToDelete(user);
-    setIsDeleteDialogOpen(true);
-  };
+  const handleDelete = useCallback(user => {
+    setDialogState(prev => ({ ...prev, delete: true, employeeToDelete: user }));
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!dialogState.employeeToDelete) return;
   
-  const confirmDelete = async () => {
-    if (!employeeToDelete) return;
-  
-      try {
-        const response = await fetch(API_ENDPOINTS.DELETE_USER(employeeToDelete._id), {
+    try {
+      const response = await fetch(API_ENDPOINTS.DELETE_USER(dialogState.employeeToDelete._id), {
         method: 'DELETE',
       });
   
       if (response.ok) {
-        fetchData(); // Refresh grid data
-        setIsDeleteDialogOpen(false); // Close the modal
+        fetchEmployee(); // Refresh grid data
+        setDialogState(prev => ({ ...prev, delete: false })); // Close the modal
       } else {
         console.error('Failed to delete the employee:', response.statusText);
       }
     } catch (error) {
       console.error('Error during deletion:', error);
     }
-  };
-  
-  
+  }, [dialogState.employeeToDelete, fetchEmployee]);
 
-  const handleCloseDialog = () => {
-    setIsCreateDialogOpen(false);
-    setIsEditDialogOpen(false);
-  };
+  const handleCloseDialog = useCallback(() => {
+    setDialogState({ create: false, edit: false, delete: false, selectedUser: null, employeeToDelete: null });
+  }, []);
 
   return (
     <div className="p-6">
-    <h2 className="text-2xl font-semibold text-gray-800">Employee Master</h2>
-    <p>Manage Your Employees</p>
+      <h2 className="text-2xl font-semibold text-gray-800">Employee Master</h2>
+      <p>Manage Your Employees</p>
 
-    <div className="my-4 flex justify-between items-center">
-      <SearchBar searchText={searchText} setSearchText={setSearchText} onSearch={handleSearch} />
-      <CreateUserButton onCreateUser={handleCreateUser} />
-    </div>
-
-    <EmployeeGrid rowData={rowData} columnDefs={columns} onGridReady={onGridReady} />
-    {/* Ensure the dialog is a direct child of the main container */}
-    {isCreateDialogOpen && (
-        <CreateEmployeeDialog onClose={handleCloseDialog} refreshGrid={fetchData} isCreateDialogOpen={isCreateDialogOpen} />
-    )}
-
-    {isEditDialogOpen && (
-        <EditEmployeeDialog onClose={handleCloseDialog} userData={selectedUser} refreshGrid={fetchData} isEditDialogOpen={isEditDialogOpen}/>
-    )}
-
-    <CommonModal isOpen={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)} title="Confirm Delete">
-      <p>Are you sure you want to delete {employeeToDelete?.name}?</p>
-      <div className="flex justify-end space-x-3">
-        <button onClick={() => setIsDeleteDialogOpen(false)} className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded-lg">Cancel</button>
-        <button onClick={confirmDelete} className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg">Delete</button>
+      <div className="my-4 flex justify-between items-center">
+        <SearchBar searchText={searchText} setSearchText={setSearchText} onSearch={handleSearch} placeholder="Search by Name or Username" />
+        <button onClick={handleCreateUser} className="bg-[#1F2937] hover:bg-opacity-90 text-white py-1.5 px-4 ml-2 rounded flex items-center">
+            <FaPlus className="mr-2"/>Create Employee
+        </button>
       </div>
-    </CommonModal>
-  </div>
+
+      <Suspense fallback={<div>Loading Grid...</div>}>
+        {isClient && (
+          <CommonAgGrid rowData={rowData} columnDefs={columns} onGridReady={onGridReady}/>
+        )}
+      </Suspense>
+
+      {dialogState.create && (
+        <CreateEmployeeDialog onClose={handleCloseDialog} refreshGrid={fetchEmployee} isCreateDialogOpen={dialogState.create} />
+      )}
+
+      {dialogState.edit && dialogState.selectedUser && (
+        <EditEmployeeDialog onClose={handleCloseDialog} userData={dialogState.selectedUser} refreshGrid={fetchEmployee} isEditDialogOpen={dialogState.edit}/>
+      )}
+
+      <CommonModal isOpen={dialogState.delete} onClose={handleCloseDialog} title="Confirm Delete">
+        <p>Are you sure you want to delete {dialogState.employeeToDelete?.name}?</p>
+        <div className="flex justify-end space-x-3">
+          <button onClick={handleCloseDialog} className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded-lg">Cancel</button>
+          <button onClick={confirmDelete} className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg">Delete</button>
+        </div>
+      </CommonModal>
+    </div>
   );
 }

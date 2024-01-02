@@ -1,4 +1,3 @@
-import React from 'react';
 import styles from '../../styles/commonModal.module.css'; // Import the CSS module for the modal
 
 const CommonModal = ({ isOpen, onClose, title, children }) => {

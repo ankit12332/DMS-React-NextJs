@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import CommonModal from '../Layouts/CommonModal';
-import { API_ENDPOINTS } from '../../config/apiConfig';
+import CommonModal from '../../Layouts/CommonModal';
+import { API_ENDPOINTS } from '../../../config/apiConfig';
 
 function EditEmployeeDialog({ onClose, userData, refreshGrid }) {
   const initialFormData = useMemo(() => ({ ...userData, newPassword: '' }), [userData]);
