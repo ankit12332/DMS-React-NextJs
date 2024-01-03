@@ -9,12 +9,16 @@ function MyApp({ Component, pageProps }) {
     const noLayout = router.pathname === '/login';
 
     // Render without layout for 'login' page, otherwise use layout
-    return noLayout ? (
-        <Component {...pageProps} />
-    ) : (
-        <Layout>
-            <Component {...pageProps} />
-        </Layout>
+     return (
+        <div>
+            {noLayout ? (
+                <Component {...pageProps} />
+            ) : (
+                <Layout>
+                    <Component {...pageProps} />
+                </Layout>
+            )}
+        </div>
     );
 }
 

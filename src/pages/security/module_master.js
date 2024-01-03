@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'reac
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/apiConfig';
-import CreateModuleDialog from '@/components/Security/Module_Master/CreateModuleDialog';
-import EditModuleDialog from '@/components/Security/Module_Master/EditModuleDialog';
+import CreateModuleDialog from '@/components/Security/Module_Master/CreateModuleModal';
+import EditModuleDialog from '@/components/Security/Module_Master/EditModuleModal';
 import CommonModal from '@/components/Layouts/CommonModal';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';

@@ -12,7 +12,14 @@ const API_ENDPOINTS = {
   GET_ALL_MODULES: `${BASE_URL}/modules`,
   CREATE_MODULE: `${BASE_URL}/modules`,
   UPDATE_MODULE:(moduleId) => `${BASE_URL}/modules/${moduleId}`,
-  DELETE_MODULE:(moduleId) => `${BASE_URL}/modules/${moduleId}`
+  DELETE_MODULE:(moduleId) => `${BASE_URL}/modules/${moduleId}`,
+
+  //Program_Master
+  GET_ALL_PROGRAMS: `${BASE_URL}/programs`,
+  CREATE_PROGRAM: `${BASE_URL}/programs`,
+  UPDATE_PROGRAM:(programId) => `${BASE_URL}/programs/${programId}`,
+  DELETE_PROGRAM:(programId) => `${BASE_URL}/programs/${programId}`,
 };
+
 
 export { BASE_URL, API_ENDPOINTS };
