@@ -6,6 +6,7 @@ import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import EditProgramModal from '@/components/Security/Program_Master/EditProgramModal';
 
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
@@ -32,7 +33,6 @@ const ProgramMaster = () => {
       try {
         const response = await fetch(API_ENDPOINTS.GET_ALL_PROGRAMS);
         const data = await response.json();
-        console.log(data)
         setPrograms(data);
       }catch (error) {
         console.error('Error fetching programs:', error);
