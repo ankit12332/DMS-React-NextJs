@@ -19,6 +19,12 @@ const API_ENDPOINTS = {
   CREATE_PROGRAM: `${BASE_URL}/programs`,
   UPDATE_PROGRAM:(programId) => `${BASE_URL}/programs/${programId}`,
   DELETE_PROGRAM:(programId) => `${BASE_URL}/programs/${programId}`,
+
+  // Role
+  CREATE_ROLE: `${BASE_URL}/roles`,
+  GET_ALL_ROLES: `${BASE_URL}/roles`,
+  UPDATE_ROLE: (roleId) => `${BASE_URL}/roles/${roleId}`,
+  DELETE_ROLE: (roleId) => `${BASE_URL}/roles/${roleId}`,
 };
 
 

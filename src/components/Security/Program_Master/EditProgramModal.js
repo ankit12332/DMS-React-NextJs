@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import CommonModal from '@/components/Layouts/CommonModal';
-import { API_ENDPOINTS } from '../../../config/apiConfig'; // Adjust the path as needed
+import { API_ENDPOINTS } from '@/config/apiConfig';
 import { observer } from 'mobx-react';
 import { StoreContext } from '@/stores/store-context';
 

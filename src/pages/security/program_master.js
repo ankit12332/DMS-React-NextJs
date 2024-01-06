@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext } from 'react';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import CreateProgramModal from '@/components/Security/Program_Master/CreateProgramModal';
+import EditProgramModal from '@/components/Security/Program_Master/EditProgramModal';
 import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
+import { StoreContext } from '@/stores/store-context';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import EditProgramModal from '@/components/Security/Program_Master/EditProgramModal';
-
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
 
 const ProgramMaster = () => {
     const [isClient, setIsClient] = useState(false);
-    const [programs, setPrograms] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
     const [dialogState, setDialogState] = useState({
@@ -23,21 +22,13 @@ const ProgramMaster = () => {
         selectedProgram: null,
         programToDelete: null,
     });
+    const store = useContext(StoreContext);
 
     useEffect(() => {
         setIsClient(true);
-        fetchPrograms();
-    }, []);
-
-    const fetchPrograms = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.GET_ALL_PROGRAMS);
-        const data = await response.json();
-        setPrograms(data);
-      }catch (error) {
-        console.error('Error fetching programs:', error);
-      }
-    };
+        // Fetch programs using MobX store
+        store.programStore.fetchPrograms();
+      }, [store.programStore]);
 
     const onGridReady = params => {
         setGridApi(params.api);
@@ -115,7 +106,7 @@ const ProgramMaster = () => {
 
             <Suspense fallback={<div>Loading Grid...</div>}>
                 {isClient && (
-                    <CommonAgGrid rowData={programs} columnDefs={columns} onGridReady={onGridReady}/>
+                    <CommonAgGrid rowData={store.programStore.programs} columnDefs={columns} onGridReady={onGridReady}/>
                 )}
             </Suspense>
 

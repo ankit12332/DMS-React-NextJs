@@ -1,24 +1,25 @@
+// RoleStore.js
 import { API_ENDPOINTS } from '@/config/apiConfig';
 import { makeAutoObservable, runInAction } from 'mobx';
 
-class ModuleStore {
-  modules = [];
+class RoleStore {
+  roles = [];
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  fetchModules = async () => {
+  fetchRoles = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.GET_ALL_MODULES);
+      const response = await fetch(API_ENDPOINTS.GET_ALL_ROLES);
       const data = await response.json();
       runInAction(() => {
-        this.modules = data;
+        this.roles = data;
       });
     } catch (error) {
-      console.error('Error fetching modules:', error);
+      console.error('Error fetching roles:', error);
     }
   };
 }
 
-export default new ModuleStore();
+export default new RoleStore();
