@@ -24,31 +24,45 @@ const EditProgramModal = observer(({ onClose, programData, refreshGrid }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        console.log('Submitting data:', {
-            ...formData
-        });
+        
+        // Initialize submissionData with fields that are always included
+        let submissionData = {
+            title: formData.title,
+            description: formData.description,
+            path: formData.path
+        };
+    
+        // Add moduleId only if it is not an empty string
+        if (formData.moduleId) {
+            submissionData.module = formData.moduleId;
+        }
+    
+        console.log('Submitting data:', submissionData);
+    
         try {
             const response = await fetch(API_ENDPOINTS.UPDATE_PROGRAM(programData._id), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, module: formData.moduleId })
+                body: JSON.stringify(submissionData)
             });
-
+    
             if (!response.ok) throw new Error(await response.text());
-
+    
             refreshGrid();
             onClose();
         } catch (error) {
             setError(`Error during submission: ${error.message}`);
         }
     };
+    
+    
 
     return (
         <CommonModal isOpen={true} onClose={onClose} title="Edit Program">
             {error && <div className="text-red-500 mb-2">{error}</div>}
-            <form id="editProgramForm" onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-1">Program Title</label>
+            <form id="editProgramForm" onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-4">
+                <div className="col-span-2">
+                    <label className="block text-gray-700 text-sm font-bold mb-1">Program Name</label>
                     <input 
                         type="text"
                         name="title"
@@ -58,7 +72,7 @@ const EditProgramModal = observer(({ onClose, programData, refreshGrid }) => {
                         className="border border-gray-300 rounded p-2 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300"
                     />
                 </div>
-                <div>
+                <div className="col-span-2">
                     <label className="block text-gray-700 text-sm font-bold mb-1">Description</label>
                     <textarea 
                         name="description"
@@ -68,7 +82,7 @@ const EditProgramModal = observer(({ onClose, programData, refreshGrid }) => {
                         className="border border-gray-300 rounded p-2 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300"
                     />
                 </div>
-                <div>
+                <div className="col-span-1">
                     <label className="block text-gray-700 text-sm font-bold mb-1">Path</label>
                     <input 
                         type="text"
@@ -79,7 +93,7 @@ const EditProgramModal = observer(({ onClose, programData, refreshGrid }) => {
                         className="border border-gray-300 rounded p-2 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300"
                     />
                 </div>
-                <div>
+                <div className="col-span-1">
                     <label className="block text-gray-700 text-sm font-bold mb-1">Module</label>
                     <select
                         name="moduleId"
@@ -87,7 +101,7 @@ const EditProgramModal = observer(({ onClose, programData, refreshGrid }) => {
                         onChange={handleInputChange}
                         className="border border-gray-300 rounded p-2 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300"
                     >
-                        <option value="" disabled>Select Module</option>
+                        <option value="" >Select Module</option>
                         {moduleStore.modules.map((module) => (
                             <option key={module._id} value={module._id}>
                                 {module.moduleName}
