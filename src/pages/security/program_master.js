@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext, startTransition } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import CreateProgramModal from '@/components/Security/Program_Master/CreateProgramModal';
 import EditProgramModal from '@/components/Security/Program_Master/EditProgramModal';
 import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
-import { StoreContext } from '@/stores/store-context';
-import { observer } from 'mobx-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
 
-const ProgramMaster = observer(() => {
+const ProgramMaster = () => {
+    const [programs, setPrograms] = useState([]);
     const [isClient, setIsClient] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
@@ -23,21 +22,23 @@ const ProgramMaster = observer(() => {
         selectedProgram: null,
         programToDelete: null,
     });
-    const store = useContext(StoreContext);
 
     useEffect(() => {
+        // Set the isClient state to true once the component mounts
         setIsClient(true);
-        // Fetch programs using MobX store
-        store.programStore.fetchPrograms();
-      }, [store.programStore]);
+        // Fetch Programs Details
+        fetchPrograms();
+    }, []);
 
-    useEffect(() => {
-    startTransition(() => {
-      if (gridApi && store.programStore.programs.length > 0) {
-        gridApi.updateGridOptions({ rowData: store.programStore.programs });
-      }
-    });
-    }, [gridApi, store.programStore.programs]);    
+    const fetchPrograms = async () => {
+        try {
+            const response = await fetch(API_ENDPOINTS.GET_ALL_PROGRAMS);
+            const data = await response.json();
+            setPrograms(data);
+        } catch (error) {
+            console.error('Error fetching programs:', error);
+        }
+    };
 
     const onGridReady = params => {
         setGridApi(params.api);
@@ -115,7 +116,7 @@ const ProgramMaster = observer(() => {
 
             <Suspense fallback={<div>Loading Grid...</div>}>
                 {isClient && (
-                    <CommonAgGrid rowData={store.programStore.programs} columnDefs={columns} onGridReady={onGridReady}/>
+                    <CommonAgGrid rowData={programs} columnDefs={columns} onGridReady={onGridReady}/>
                 )}
             </Suspense>
 
@@ -136,6 +137,6 @@ const ProgramMaster = observer(() => {
             )}
         </div>
     );
-});
+};
 
 export default ProgramMaster;

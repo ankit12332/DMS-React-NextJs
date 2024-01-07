@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext, startTransition } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/apiConfig';
+import CommonModal from '@/components/Layouts/CommonModal';
 import CreateModuleDialog from '@/components/Security/Module_Master/CreateModuleModal';
 import EditModuleDialog from '@/components/Security/Module_Master/EditModuleModal';
-import CommonModal from '@/components/Layouts/CommonModal';
-import { StoreContext } from '@/stores/store-context';
-import { observer } from 'mobx-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
 
-const ModuleMaster = observer(() => {
+const ModuleMaster = () => {
+  const [modules, setModules] = useState([]);
   const [isClient, setIsClient] = useState(false); //For CommonAgGrid. Because in Server Side Rendering heavy library takes time to load
   const [searchText, setSearchText] = useState('');
   const [gridApi, setGridApi] = useState(null);
@@ -23,22 +22,23 @@ const ModuleMaster = observer(() => {
     selectedModule: null,
     moduleToDelete: null,
   });
-  const store = useContext(StoreContext);
 
   useEffect(() => {
+    // Set the isClient state to true once the component mounts
     setIsClient(true);
-    // Fetch modules using MobX store
-    store.moduleStore.fetchModules();
-  }, [store.moduleStore]);
+    // Fetch Modules Details
+    fetchModules();
+  }, []);
 
-  useEffect(() => {
-    startTransition(() => {
-      if (gridApi && store.moduleStore.modules.length > 0) {
-        gridApi.updateGridOptions({ rowData: store.moduleStore.modules });
-      }
-    });
-  }, [gridApi, store.moduleStore.modules]);
-  
+  const fetchModules = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GET_ALL_MODULES);
+      const data = await response.json();
+      setModules(data);
+    } catch (error) {
+      console.error('Error fetching modules:', error);
+    }
+  };
 
   const onGridReady = params => {
     setGridApi(params.api);
@@ -120,7 +120,7 @@ const ModuleMaster = observer(() => {
 
       <Suspense fallback={<div>Loading Grid...</div>}>
         {isClient && (
-          <CommonAgGrid rowData={store.moduleStore.modules} columnDefs={columns} onGridReady={onGridReady}/>
+          <CommonAgGrid rowData={modules} columnDefs={columns} onGridReady={onGridReady}/>
         )}
       </Suspense>
 
@@ -141,6 +141,6 @@ const ModuleMaster = observer(() => {
       )}
     </div>
   );
-});
+};
 
 export default ModuleMaster;

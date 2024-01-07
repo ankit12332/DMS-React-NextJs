@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext, startTransition } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
-//import CreateRoleModal from '@/components/Security/Role_Master/CreateRoleModal'; // Import CreateRoleModal
-//import EditRoleModal from '@/components/Security/Role_Master/EditRoleModal'; // Import EditRoleModal
 import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
-import { StoreContext } from '@/stores/store-context';
-import { observer } from 'mobx-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
 
-const RoleMaster = observer(() => {
+const RoleMaster = () => {
+    const [roles, setRoles] = useState([]);
     const [isClient, setIsClient] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
@@ -23,21 +20,23 @@ const RoleMaster = observer(() => {
         selectedRole: null,
         roleToDelete: null,
     });
-    const store = useContext(StoreContext);
 
     useEffect(() => {
+        // Set the isClient state to true once the component mounts
         setIsClient(true);
-        // Fetch roles using MobX store
-        store.roleStore.fetchRoles();
-      }, [store.roleStore]);
+        // Fetch Roles Details
+        fetchRoles();
+    }, []);
 
-    useEffect(() => {
-    startTransition(() => {
-      if (gridApi && store.roleStore.roles.length > 0) {
-        gridApi.updateGridOptions({ rowData: store.roleStore.roles });
-      }
-    });
-    }, [gridApi, store.roleStore.roles]);  
+    const fetchRoles = async () => {
+        try {
+            const response = await fetch(API_ENDPOINTS.GET_ALL_ROLES);
+            const data = await response.json();
+            setRoles(data);
+        } catch (error) {
+            console.error('Error fetching roles:', error);
+        }
+    };
 
     const formatPrograms = (modules) => {
         return modules.flatMap(module => module.programs.map(program => program.title)).join(', ');
@@ -125,7 +124,7 @@ const RoleMaster = observer(() => {
 
             <Suspense fallback={<div>Loading Grid...</div>}>
                 {isClient && (
-                    <CommonAgGrid rowData={store.roleStore.roles} columnDefs={columns} onGridReady={onGridReady}/>
+                    <CommonAgGrid rowData={roles} columnDefs={columns} onGridReady={onGridReady}/>
                 )}
             </Suspense>
 
@@ -146,6 +145,6 @@ const RoleMaster = observer(() => {
             )}
         </div>
     );
-});
+};
 
 export default RoleMaster;
