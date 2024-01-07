@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext, startTransition } from 'react';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import CreateProgramModal from '@/components/Security/Program_Master/CreateProgramModal';
@@ -6,12 +6,13 @@ import EditProgramModal from '@/components/Security/Program_Master/EditProgramMo
 import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
 import { StoreContext } from '@/stores/store-context';
+import { observer } from 'mobx-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
 
-const ProgramMaster = () => {
+const ProgramMaster = observer(() => {
     const [isClient, setIsClient] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
@@ -29,6 +30,14 @@ const ProgramMaster = () => {
         // Fetch programs using MobX store
         store.programStore.fetchPrograms();
       }, [store.programStore]);
+
+    useEffect(() => {
+    startTransition(() => {
+      if (gridApi && store.programStore.programs.length > 0) {
+        gridApi.updateGridOptions({ rowData: store.programStore.programs });
+      }
+    });
+    }, [gridApi, store.programStore.programs]);    
 
     const onGridReady = params => {
         setGridApi(params.api);
@@ -127,6 +136,6 @@ const ProgramMaster = () => {
             )}
         </div>
     );
-};
+});
 
 export default ProgramMaster;

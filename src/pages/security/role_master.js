@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, useContext, startTransition } from 'react';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 //import CreateRoleModal from '@/components/Security/Role_Master/CreateRoleModal'; // Import CreateRoleModal
@@ -6,12 +6,13 @@ import SearchBar from '@/components/Layouts/CommonSearchBar';
 import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
 import { StoreContext } from '@/stores/store-context';
+import { observer } from 'mobx-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'), { ssr: false });
 
-const RoleMaster = () => {
+const RoleMaster = observer(() => {
     const [isClient, setIsClient] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
@@ -29,6 +30,14 @@ const RoleMaster = () => {
         // Fetch roles using MobX store
         store.roleStore.fetchRoles();
       }, [store.roleStore]);
+
+    useEffect(() => {
+    startTransition(() => {
+      if (gridApi && store.roleStore.roles.length > 0) {
+        gridApi.updateGridOptions({ rowData: store.roleStore.roles });
+      }
+    });
+    }, [gridApi, store.roleStore.roles]);  
 
     const formatPrograms = (modules) => {
         return modules.flatMap(module => module.programs.map(program => program.title)).join(', ');
@@ -137,6 +146,6 @@ const RoleMaster = () => {
             )}
         </div>
     );
-};
+});
 
 export default RoleMaster;
