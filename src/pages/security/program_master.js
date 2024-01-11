@@ -13,6 +13,7 @@ const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridR
 const ProgramMaster = () => {
     const [programs, setPrograms] = useState([]);
     const [isClient, setIsClient] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
     const [dialogState, setDialogState] = useState({
@@ -42,7 +43,16 @@ const ProgramMaster = () => {
 
     const onGridReady = params => {
         setGridApi(params.api);
+        fetchPrograms();
     };
+
+    useEffect(() => {
+        if (gridApi && isLoading) {
+            gridApi.showLoadingOverlay();
+        } else if (gridApi) {
+            gridApi.hideOverlay();
+        }
+    }, [gridApi, isLoading]);
 
     const handleSearch = useCallback(() => {
         gridApi.setQuickFilter(searchText);

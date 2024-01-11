@@ -7,14 +7,14 @@ import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/apiConfig';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { LoadingComponent } from '@/components/Layouts/CustomLoadingCellRenderer';
 
-const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridReact'),{ ssr: false });
+const CommonHeavyDataAgGridReact = React.lazy(() => import('@/components/Layouts/CommonHeavyDataAgGridReact'),{ ssr: false });
 
 export default function EmployeeMaster() {
   const [isClient, setIsClient] = useState(false); //For CommonAgGrid. Because in Server Side Rendering heavy library takes time to load
   const [searchText, setSearchText] = useState('');
   const [gridApi, setGridApi] = useState(null);
-  const [rowData, setRowData] = useState([]);
   const [dialogState, setDialogState] = useState({
     create: false,
     edit: false,
@@ -27,12 +27,13 @@ export default function EmployeeMaster() {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    fetchEmployee();
-  }, []);
-
   const columns = useMemo(() => [
-    { headerName: "Name", field: "name", sortable: true, filter: true, flex: 1 },
+    { headerName: "Name", field: "name", sortable: true, filter: true, flex: 1, cellRenderer: (params) => {
+      if (!params.data) {
+        return <LoadingComponent />;
+      }
+      return params.value;
+    } },
     { headerName: "Employee Code", field: "employeeCode", sortable: true, filter: true, flex: 1 },
     { headerName: "Email", field: "email", sortable: true, filter: true, flex: 1 },
     { headerName: "Username", field: "username", sortable: true, filter: true, flex: 1 },
@@ -40,59 +41,103 @@ export default function EmployeeMaster() {
     {
       headerName: "Options",
       field: "options",
-      cellRenderer: (params) => (
-        <div className="flex items-center space-x-3 h-full">
-          <button 
-            className="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out transform hover:scale-110"
-            onClick={() => handleEdit(params.data)}
-            style={{fontSize:"1.1rem"}}
-          >
-            <FaEdit />
-          </button>
-          <button 
-            className="text-red-500 hover:text-red-700 transition duration-300 ease-in-out transform hover:scale-110"
-            onClick={() => handleDelete(params.data)}
-            style={{fontSize:"1rem"}}
-          >
-            <FaTrash />
-          </button>
-        </div>
-      ),
+      cellRenderer: (params) => {
+
+        if (!params.data) {
+          return null; 
+        }
+
+        return (
+          <div className="flex items-center space-x-3 h-full">
+            <button 
+              className="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out transform hover:scale-110"
+              onClick={() => handleEdit(params.data)}
+              style={{fontSize:"1.1rem"}}
+            >
+              <FaEdit />
+            </button>
+            <button 
+              className="text-red-500 hover:text-red-700 transition duration-300 ease-in-out transform hover:scale-110"
+              onClick={() => handleDelete(params.data)}
+              style={{fontSize:"1rem"}}
+            >
+              <FaTrash />
+            </button>
+          </div>
+        );
+      },
       flex: 0.5
     }
-  ], []);
+  ], []);  
 
-  const fetchEmployee = async () => {
-    try {
-      const response = await fetch(API_ENDPOINTS.GET_ALL_USERS);
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setRowData(data);
-      } else {
-        console.error('Data is not an array:', data);
-        // Handle the case where data is not an array
+  const fetchEmployee = useCallback(() => {
+    return {
+      getRows: (params) => {
+        const startRow = params.startRow;
+        const endRow = params.endRow;
+        const sortingModel = params.sortModel;
+  
+        let sortField = sortingModel.length > 0 ? sortingModel[0].colId : null;
+        let sortOrder = sortingModel.length > 0 ? sortingModel[0].sort : null;
+
+        const requestUrl = `${API_ENDPOINTS.GET_ALL_USERS}?startRow=${startRow}&endRow=${endRow}&sortField=${sortField}&sortOrder=${sortOrder}`;
+  
+        fetch(requestUrl)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.data) {
+              params.successCallback(data.data, data.totalCount);
+            } else {
+              params.failCallback();
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+            params.failCallback();
+          });
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+    };
+  }, []);
+  
   
 
-  const onGridReady = useCallback(params => {
+  const refreshGridData = useCallback(() => {
+    if (gridApi) {
+      const dataSource = fetchEmployee();
+      gridApi.updateGridOptions({ datasource: dataSource });
+    }
+  }, [fetchEmployee, gridApi]);
+
+  const onGridReady = useCallback((params) => {
     setGridApi(params.api);
-  }, []);
+    const dataSource = fetchEmployee();
+    params.api.updateGridOptions({ datasource: dataSource });
+  }, [fetchEmployee]);
 
   const handleSearch = useCallback(() => {
-    if (searchText.trim() === '') {
-      gridApi.setRowData(rowData); // Reset to original data if search text is empty
-    } else {
-      const filteredData = rowData.filter(item => 
-        item.name.toLowerCase().includes(searchText.toLowerCase()) || 
-        item.username.toLowerCase().includes(searchText.toLowerCase())
-      );
-      gridApi.setRowData(filteredData); // Set filtered data
+    if (gridApi) {
+      const dataSource = {
+        getRows: (params) => {
+          fetch(`${API_ENDPOINTS.GET_ALL_USERS}?searchText=${searchText}&startRow=${params.startRow}&endRow=${params.endRow}`)
+            .then(response => response.json())
+            .then(data => {
+              if (data && data.data) {
+                params.successCallback(data.data, data.totalCount);
+              } else {
+                params.failCallback();
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching data:', error);
+              params.failCallback();
+            });
+        }
+      };
+      gridApi.updateGridOptions({ datasource: dataSource });
     }
-  }, [searchText, rowData, gridApi]);
+  }, [searchText, gridApi]);
+  
+  
 
   const handleCreateUser = () => {
     setDialogState(prev => ({ ...prev, create: true }));
@@ -115,7 +160,7 @@ export default function EmployeeMaster() {
       });
   
       if (response.ok) {
-        fetchEmployee(); // Refresh grid data
+        refreshGridData(); // Refresh grid data
         setDialogState(prev => ({ ...prev, delete: false })); // Close the modal
       } else {
         console.error('Failed to delete the employee:', response.statusText);
@@ -143,16 +188,20 @@ export default function EmployeeMaster() {
 
       <Suspense fallback={<div>Loading Grid...</div>}>
         {isClient && (
-          <CommonAgGrid rowData={rowData} columnDefs={columns} onGridReady={onGridReady}/>
+          <CommonHeavyDataAgGridReact 
+            onGridReady={onGridReady} 
+            columnDefs={columns} 
+            fetchDataSource={fetchEmployee} 
+          />
         )}
       </Suspense>
 
       {dialogState.create && (
-        <CreateEmployeeDialog onClose={handleCloseDialog} refreshGrid={fetchEmployee} isCreateDialogOpen={dialogState.create} />
+        <CreateEmployeeDialog onClose={handleCloseDialog} refreshGrid={refreshGridData} isCreateDialogOpen={dialogState.create} />
       )}
 
       {dialogState.edit && dialogState.selectedUser && (
-        <EditEmployeeDialog onClose={handleCloseDialog} userData={dialogState.selectedUser} refreshGrid={fetchEmployee} isEditDialogOpen={dialogState.edit}/>
+        <EditEmployeeDialog onClose={handleCloseDialog} userData={dialogState.selectedUser} refreshGrid={refreshGridData}  isEditDialogOpen={dialogState.edit}/>
       )}
 
       <CommonModal isOpen={dialogState.delete} onClose={handleCloseDialog} title="Confirm Delete">

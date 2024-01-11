@@ -54,9 +54,9 @@ const EditProgramModal = observer(({ onClose, programData, refreshGrid }) => {
             setError(`Error during submission: ${error.message}`);
         }
     };
-    
-    
 
+
+    
     return (
         <CommonModal isOpen={true} onClose={onClose} title="Edit Program">
             {error && <div className="text-red-500 mb-2">{error}</div>}

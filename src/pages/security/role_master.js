@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, useRef } from 'react';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import CommonModal from '@/components/Layouts/CommonModal';
@@ -11,6 +11,9 @@ const CommonAgGrid = React.lazy(() => import('@/components/Layouts/CommonAgGridR
 const RoleMaster = () => {
     const [roles, setRoles] = useState([]);
     const [isClient, setIsClient] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [currentPrograms, setCurrentPrograms] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [gridApi, setGridApi] = useState(null);
     const [dialogState, setDialogState] = useState({
@@ -38,24 +41,69 @@ const RoleMaster = () => {
         }
     };
 
-    const formatPrograms = (modules) => {
-        return modules.flatMap(module => module.programs.map(program => program.title)).join(', ');
-    };
+    // const formatPrograms = (modules) => {
+    //     return modules.flatMap(module => module.programs.map(program => program.title)).join(', ');
+    // };
 
     const onGridReady = params => {
         setGridApi(params.api);
+        fetchRoles();
     };
+
+    useEffect(() => {
+        if (gridApi && isLoading) {
+            gridApi.showLoadingOverlay();
+        } else if (gridApi) {
+            gridApi.hideOverlay();
+        }
+    }, [gridApi, isLoading]);
+    
 
     const handleSearch = useCallback(() => {
         gridApi.setQuickFilter(searchText);
     }, [searchText, gridApi]);
+
+    const closeDropdown = () => {
+        setCurrentPrograms(null);
+        setDropdownPosition(null);
+    };
+
+    const dropdownRef = useRef(null);
+    useOutsideClick(dropdownRef, closeDropdown);
+
+    const showPrograms = (programs, event) => {
+        const buttonElement = event.currentTarget;
+        const rect = buttonElement.getBoundingClientRect();
+
+        setCurrentPrograms(programs);
+        setDropdownPosition({
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX
+        });
+    };
+
+    const ViewProgramsRenderer = ({ data }) => {
+        const programs = data.modules.flatMap(module => module.programs);
+        if (programs.length === 0) {
+            return null; // Don't show anything if there are no programs
+        }
+
+        return (
+            <span
+                onClick={(e) => showPrograms(programs, e)}
+                className="text-blue-600 hover:text-blue-800 cursor-pointer"
+            >
+                View Programs
+            </span>
+        );
+    };
 
     const columns = useMemo(() => [
         { headerName: "Role Name", field: "roleName", sortable: true, filter: true, flex: 1.5 },
         {
           headerName: "Programs",
           field: "modules",
-          valueFormatter: (params) => formatPrograms(params.value),
+          cellRenderer: ViewProgramsRenderer,
           sortable: true,
           filter: true,
           flex: 3
@@ -143,8 +191,42 @@ const RoleMaster = () => {
                     </div>
                 </CommonModal>
             )}
+            <div ref={dropdownRef}>
+                <FloatingDropdown programs={currentPrograms} position={dropdownPosition} />
+            </div>
         </div>
     );
 };
 
 export default RoleMaster;
+
+const FloatingDropdown = ({ programs, position }) => {
+    if (!programs) return null;
+
+    return (
+        <div
+            style={{ top: position.top, left: position.left }}
+            className="absolute mt-3 w-52 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+        >
+            <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                {programs.map(program => (
+                    <a key={program.id} href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                        {program.title}
+                    </a>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+function useOutsideClick(ref, onOutsideClick) {
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (ref.current && !ref.current.contains(event.target)) {
+                onOutsideClick();
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [ref, onOutsideClick]);
+}
