@@ -8,7 +8,7 @@ const CommonHeavyDataAgGridReact = ({ onGridReady, columnDefs }) => {
         onGridReady={onGridReady}
         columnDefs={columnDefs}
         rowModelType="infinite"
-        cacheBlockSize={50} // Large block size equal to pagination page size
+        cacheBlockSize={8} // Large block size equal to pagination page size
         maxBlocksInCache={8} // Adjust based on memory capacity
         paginationPageSizeSelector={[8, 10, 20, 50]}
         animateRows={true}

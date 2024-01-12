@@ -5,9 +5,9 @@ import EditEmployeeDialog from '@/components/Administrator/Employee_Master/EditE
 import CommonModal from '@/components/Layouts/CommonModal';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/apiConfig';
+import { LoadingComponent } from '@/components/Layouts/CustomLoadingCellRenderer';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import { LoadingComponent } from '@/components/Layouts/CustomLoadingCellRenderer';
 
 const CommonHeavyDataAgGridReact = React.lazy(() => import('@/components/Layouts/CommonHeavyDataAgGridReact'),{ ssr: false });
 
@@ -75,13 +75,17 @@ export default function EmployeeMaster() {
       getRows: (params) => {
         const startRow = params.startRow;
         const endRow = params.endRow;
-        const sortingModel = params.sortModel;
+        //With sorting feature and it's slow
+        //const sortingModel = params.sortModel;
   
-        let sortField = sortingModel.length > 0 ? sortingModel[0].colId : null;
-        let sortOrder = sortingModel.length > 0 ? sortingModel[0].sort : null;
+        //let sortField = sortingModel.length > 0 ? sortingModel[0].colId : null;
+        //let sortOrder = sortingModel.length > 0 ? sortingModel[0].sort : null;
 
-        const requestUrl = `${API_ENDPOINTS.GET_ALL_USERS}?startRow=${startRow}&endRow=${endRow}&sortField=${sortField}&sortOrder=${sortOrder}`;
+        //const requestUrl = `${API_ENDPOINTS.GET_ALL_USERS}?startRow=${startRow}&endRow=${endRow}&sortField=${sortField}&sortOrder=${sortOrder}`;
   
+        //Without sorting feature and it's fast
+        const requestUrl = `${API_ENDPOINTS.GET_ALL_USERS}?startRow=${startRow}&endRow=${endRow}`;
+
         fetch(requestUrl)
           .then(response => response.json())
           .then(data => {
