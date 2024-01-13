@@ -25,6 +25,7 @@ const API_ENDPOINTS = {
   GET_ALL_ROLES: `${BASE_URL}/roles`,
   UPDATE_ROLE: (roleId) => `${BASE_URL}/roles/${roleId}`,
   DELETE_ROLE: (roleId) => `${BASE_URL}/roles/${roleId}`,
+  UPDATE_ROLE_PROGRAMS: (roleId) => `${BASE_URL}/roles/roles/${roleId}`,
 };
 
 
