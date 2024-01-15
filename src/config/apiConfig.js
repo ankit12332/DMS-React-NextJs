@@ -26,6 +26,9 @@ const API_ENDPOINTS = {
   UPDATE_ROLE: (roleId) => `${BASE_URL}/roles/${roleId}`,
   DELETE_ROLE: (roleId) => `${BASE_URL}/roles/${roleId}`,
   UPDATE_ROLE_PROGRAMS: (roleId) => `${BASE_URL}/roles/roles/${roleId}`,
+
+  // Patient
+  CREATE_PATIENT: `${BASE_URL}/patient`,
 };
 
 
