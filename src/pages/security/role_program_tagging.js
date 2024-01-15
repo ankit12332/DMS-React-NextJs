@@ -42,7 +42,7 @@ const RoleProgramTagging = () => {
 
     const handleRoleChange = useCallback((e) => {
         const selectedRoleId = e.target.value;
-        const selectedRoleData = data.roles.find(role => role.roleId === selectedRoleId);
+        const selectedRoleData = data.roles.find(role => role._id === selectedRoleId);
         const assignedProgramIds = selectedRoleData?.modules.flatMap(module => module.programs.map(program => program.programId)) || [];
 
         setData(prev => ({
@@ -73,7 +73,7 @@ const RoleProgramTagging = () => {
 
     // Memoize options to avoid re-rendering
     const roleOptions = useMemo(() => data.roles.map(role => (
-        <option key={role.roleId} value={role.roleId}>{role.roleName}</option>
+        <option key={role._id} value={role._id}>{role.roleName}</option>
     )), [data.roles]);
 
 
