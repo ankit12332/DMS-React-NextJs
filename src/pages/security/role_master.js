@@ -103,6 +103,11 @@ const RoleMaster = () => {
         {
           headerName: "Programs",
           field: "modules",
+          valueFormatter: (params) => {
+            // Format the modules object into a string representation
+            // Example: return a comma-separated list of program titles
+            return params.value.map(module => module.programs.map(program => program.title).join(', ')).join('; ');
+          },
           cellRenderer: ViewProgramsRenderer,
           sortable: true,
           filter: true,
@@ -210,6 +215,7 @@ const FloatingDropdown = ({ programs, position }) => {
         >
             <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                 {programs.map(program => (
+                    // Use program.id as the key, assuming each program has a unique id
                     <a key={program.id} href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
                         {program.title}
                     </a>
@@ -218,6 +224,7 @@ const FloatingDropdown = ({ programs, position }) => {
         </div>
     );
 };
+
 
 function useOutsideClick(ref, onOutsideClick) {
     useEffect(() => {

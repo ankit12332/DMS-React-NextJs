@@ -8,6 +8,7 @@ const UserRoleTagging = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
+    const [selectedUserId, setSelectedUserId] = useState(null);
 
     const handleSearch = async () => {
         setIsLoading(true);
@@ -22,6 +23,51 @@ const UserRoleTagging = () => {
             // Handle the error appropriately
         }
         setIsLoading(false);
+    };
+
+    const handleUserChange = (userId) => {
+        setSelectedUserId(userId);
+        const user = users.find(u => u._id === userId);
+        if(user && user.roles){
+            // Update roles with isChecked based on user's roles
+            const updatedRoles = roles.map(role => ({
+                ...role,
+                isChecked: user.roles.includes(role.roleId)
+            }));
+            setRoles(updatedRoles);
+        } else {
+            setRoles(roles.map(role => ({ ...role, isChecked: false })));
+        }
+    };
+
+    const handleRoleChange = (roleId) => {
+        setRoles(roles.map(role => 
+            role.roleId === roleId ? { ...role, isChecked: !role.isChecked } : role
+        ));
+    };
+
+    const handleSave = async () => {
+        if(selectedUserId){
+            const selectedRoleIds = roles.filter(role => role.isChecked).map(role => role.roleId);
+            try {
+                const response = await fetch(`http://localhost:3000/users/${selectedUserId}/roles`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ roleIds: selectedRoleIds })
+                });
+                if(response.ok){
+                    // Handle successful save
+                    console.log("Roles updated successfully");
+                } else {
+                    // Handle errors
+                    console.error("Error updating roles");
+                }
+            } catch(error){
+                console.error('Error:', error);
+            }
+        }
     };
 
     useEffect(() => {
@@ -68,7 +114,7 @@ const UserRoleTagging = () => {
                 {/* Right Column - Dropdown */}
                 <div>
                     <span className="text-sm font-medium">Select User:</span>
-                    <select className="border border-gray-300 rounded-lg p-2 mt-2 w-full">
+                    <select onChange={(e) => handleUserChange(e.target.value)} className="border border-gray-300 rounded-lg p-2 mt-2 w-full">
                         <option value="">Select User</option>
                         {users.map(user => (
                             <option key={user._id} value={user._id}>{user.name} - {user.employeeCode}</option>
@@ -88,7 +134,8 @@ const UserRoleTagging = () => {
                                     type="checkbox" 
                                     className="form-checkbox h-5 w-5 text-gray-600" 
                                     value={role.roleId}
-                                    // Add onChange handler as needed
+                                    checked={role.isChecked || false}
+                                    onChange={() => handleRoleChange(role.roleId)}
                                 />
                                 <span className="text-gray-700">{role.roleName}</span>
                             </label>
@@ -100,6 +147,7 @@ const UserRoleTagging = () => {
             {/* Save Button */}
             <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
+                onClick={handleSave}
             >
              Save
             </button>
