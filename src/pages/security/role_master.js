@@ -3,6 +3,8 @@ import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import SearchBar from '@/components/Layouts/CommonSearchBar';
 import CommonModal from '@/components/Layouts/CommonModal';
 import { API_ENDPOINTS } from '../../config/apiConfig';
+import CreateRoleModal from '@/components/Security/Role_Master/CreateRoleModal';
+import EditRoleModal from '@/components/Security/Role_Master/EditRoleModal';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -36,6 +38,7 @@ const RoleMaster = () => {
             const response = await fetch(API_ENDPOINTS.GET_ALL_ROLES);
             const data = await response.json();
             setRoles(data);
+            console.log(data)
         } catch (error) {
             console.error('Error fetching roles:', error);
         }
@@ -155,7 +158,7 @@ const RoleMaster = () => {
         if (!roleToDelete) return;
 
         // Replace with actual API call
-        const response = await fetch(API_ENDPOINTS.DELETE_ROLE(roleToDelete.roleId), { method: 'DELETE' });
+        const response = await fetch(API_ENDPOINTS.DELETE_ROLE(roleToDelete._id), { method: 'DELETE' });
         if (response.ok) {
             fetchRoles();
             setDialogState(prev => ({ ...prev, delete: false }));
