@@ -1,12 +1,16 @@
 const BASE_URL = 'http://localhost:3000';
 
 const API_ENDPOINTS = {
+  //Login
   LOGIN: `${BASE_URL}/auth/login`,
+
+  //User_Master
   GET_USER_BY_ID: (userId) => `${BASE_URL}/users/${userId}`,
   GET_ALL_USERS: `${BASE_URL}/users`,
   CREATE_USER: `${BASE_URL}/users`,
   UPDATE_USER: (userId) => `${BASE_URL}/users/${userId}`,
   DELETE_USER: (userId) => `${BASE_URL}/users/${userId}`,
+  GET_USER_ROLES: (userId) => `${BASE_URL}/users/${userId}/roles`,
 
   //Module_Master
   GET_ALL_MODULES: `${BASE_URL}/modules`,

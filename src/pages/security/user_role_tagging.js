@@ -15,7 +15,7 @@ const UserRoleTagging = () => {
         try {
             const response = await fetch(`${API_ENDPOINTS.GET_ALL_USERS}?searchText=${searchText}&startRow=0&endRow=1000000`);
             const data = await response.json();
-            console.log(data)
+            //console.log(data)
             // Assuming the data is in the format { users: [...] }
             setUsers(data.data);   
         } catch (error) {
@@ -50,7 +50,7 @@ const UserRoleTagging = () => {
         if(selectedUserId){
             const selectedRoleIds = roles.filter(role => role.isChecked).map(role => role.roleId);
             try {
-                const response = await fetch(`http://localhost:3000/users/${selectedUserId}/roles`, {
+                const response = await fetch(API_ENDPOINTS.GET_USER_ROLES(selectedUserId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
